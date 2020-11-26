@@ -65,6 +65,11 @@ class Message:
             if("broadcaster" in self.messageData['badges']):
                 return True
         return False
+    def IsVIP(self):
+        if("badges" in self.messageData):
+            if("vip" in self.messageData['badges']):
+                return True
+        return False
 
 class Command:
     def __init__(self,trigger,onTriggerEvents,prefix=""):
@@ -72,12 +77,15 @@ class Command:
         self.trigger = trigger #So like 'ping'
         self.onTriggered = onTriggerEvents #A list (or 1) method that'll get called, being passed a 'CommandArgs' object.
         self.caseSensitive = False
+        self.vipOnly = False
         self.modOnly = False
         self.broadcasterOnly = False
     def CheckForCommand(self,message):
         if(self.broadcasterOnly and message.IsBroadcaster() == False):
             return
         if(self.modOnly and message.IsMod() == False):
+            return
+        if(self.vipOnly and message.IsVip() == False):
             return
 
 

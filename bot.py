@@ -32,12 +32,11 @@ class TwitchBot:
         while self.active:
             recieved = self.RecieveMessage()
             formattedMessage = Message(recieved)
-            if("display-name" not in formattedMessage.messageData or (formattedMessage.owner == self.username and self.ignoreSelf)):
+            if(formattedMessage.messageData == {} or "display-name" not in formattedMessage.messageData or (formattedMessage.owner == self.username and self.ignoreSelf)):
                 continue #If self, ignore.
             for command in self.commandRegistry:
                 command.CheckForCommand(formattedMessage)
-            if(formattedMessage.messageData != {}):
-                self.messageQueue.append(formattedMessage)
+            self.messageQueue.append(formattedMessage)
     def RegisterCommand(self,command):
         self.commandRegistry.append(command)
     def RecieveMessage(self):
@@ -68,7 +67,7 @@ class TwitchBot:
         self.socket.connect(self.ircServer)
         self.SendMessage("PASS "+self.oauth+"\r\n")
         self.SendMessage("NICK "+self.username+"\r\n")
-        time.sleep(0.5)
+        time.sleep(0.25)
         self.SendMessage("JOIN #"+channelToJoin+"\r\n")
         self.channel = Channel(channelToJoin)
         self.active = True
