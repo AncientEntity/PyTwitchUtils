@@ -1,6 +1,6 @@
 import json
 from urllib.request import urlopen
-
+import json
 
 class Message:
     def __init__(self,rawData):
@@ -110,37 +110,30 @@ class Channel:
         self.name = name # Channel's name
     def GetCurrentViewers(self):
         res = urlopen("https://tmi.twitch.tv/group/user/" + self.name + "/chatters")
-
-        List = res.read()
+        content = res.read()
         # print(List)
 
-        insideList = False
-        recordingName = False
-        namesFound = []
-        curName = ""
-        for letter in List:
-            letter = "" + chr(letter)
-            # print(letter)
-            # print(letter,end="")
-            if (letter == '['):
-                insideList = True
-            elif (letter == ']'):
-                insideList = False
-            if (insideList):
-                if (letter == '"'):
-                    if (recordingName == False):
-                        recordingName = True
-                    else:
-                        namesFound.append(curName)
-                        recordingName = False
-                        curName = ""
-                elif (recordingName):
-                    curName = curName + letter
-                    # print(curName)
+        totalChatters = []
+        sortedChatters = json.loads(content)['chatters']
+        for group in sortedChatters.keys():
+            for chatter in sortedChatters[group]:
+                totalChatters.append(chatter)
+        return totalChatters
+    def GetViewerGroup(self,group):
+        res = urlopen("https://tmi.twitch.tv/group/user/" + self.name + "/chatters")
+        content = res.read()
+        # print(List)
 
-        # print(namesFound)
-        return namesFound
-
+        totalChatters = []
+        return json.loads(content)['chatters'][group]
+    def GetCurrentModerators(self):
+        return self.GetViewerGroup('moderators')
+    def GetCurrentVIPs(self):
+        return self.GetViewerGroup('vips')
+    def GetViewerCount(self):
+        res = urlopen("https://tmi.twitch.tv/group/user/" + self.name + "/chatters")
+        content = res.read()
+        return int(content['chatter_count'])
 
 def Log(msg):
     print("[PyTwitchUtils] "+msg)
