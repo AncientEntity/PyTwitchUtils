@@ -1,3 +1,6 @@
+import json
+from urllib.request import urlopen
+
 
 class Message:
     def __init__(self,rawData):
@@ -53,22 +56,45 @@ class CommandArgs:
         self.args = args
         self.message = message
 
+class Channel:
+    def __init__(self,name):
+        self.name = name # Channel's name
+    def GetCurrentViewers(self):
+        res = urlopen("https://tmi.twitch.tv/group/user/" + self.name + "/chatters")
+
+        List = res.read()
+        # print(List)
+
+        insideList = False
+        recordingName = False
+        namesFound = []
+        curName = ""
+        for letter in List:
+            letter = "" + chr(letter)
+            # print(letter)
+            # print(letter,end="")
+            if (letter == '['):
+                insideList = True
+            elif (letter == ']'):
+                insideList = False
+            if (insideList):
+                if (letter == '"'):
+                    if (recordingName == False):
+                        recordingName = True
+                    else:
+                        namesFound.append(curName)
+                        recordingName = False
+                        curName = ""
+                elif (recordingName):
+                    curName = curName + letter
+                    # print(curName)
+
+        # print(namesFound)
+        return namesFound
+
 
 def Log(msg):
     print("[PyTwitchUtils] "+msg)
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 if(__name__ == "__main__"):

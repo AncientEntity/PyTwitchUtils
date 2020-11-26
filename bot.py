@@ -1,5 +1,5 @@
 import socket, time, threading
-from main import Message
+from main import Message, Channel
 from main import Command
 from main import Log
 
@@ -17,7 +17,7 @@ class TwitchBot:
 
         self.managerThread = None
         self.messageQueue = []
-        self.channelIn = ""
+        self.channel = None
     def GetNext(self):
         while(len(self.messageQueue) <= 0):
             pass #Hang until a message is ready
@@ -44,7 +44,7 @@ class TwitchBot:
                 self.SendMessage("PONG :tmi.twitch.tv\r\n")
                 Log("Successfully Pinged the server")
             elif ("End of /NAMES list" in response):
-                Log("Successfully Connected To " + self.channelIn)
+                Log("Successfully Connected To " + self.channel.name)
                 time.sleep(1.2)
                 Log("Welcome Message Successfully Send.")
                 time.sleep(0.5)
@@ -65,7 +65,7 @@ class TwitchBot:
         self.SendMessage("NICK "+self.username+"\r\n")
         time.sleep(0.5)
         self.SendMessage("JOIN #"+channelToJoin+"\r\n")
-        self.channelIn = channelToJoin
+        self.channel = Channel(channelToJoin)
         self.active = True
         self.managerThread = threading.Thread(target=self.BotManager,args=())
         self.managerThread.start()
@@ -74,5 +74,9 @@ class TwitchBot:
         time.sleep(0.25) #Wait for managerThread to stop to prevent any possible issues
         self.socket.close()
     def Chat(self,msg):
-        messageTemp = "PRIVMSG #" + self.channelIn + " :" + msg
+        messageTemp = "PRIVMSG #" + self.channel.name + " :" + msg
         self.SendMessage(messageTemp + "\r\n")
+    def Ban(self,user,reason=""): #Not Tested
+        self.Chat("/ban "+user+" "+reason)
+    def Timeout(self,user,secs=600): #Not Tested
+        self.Chat("/timeout "+user+" "+str(secs))
