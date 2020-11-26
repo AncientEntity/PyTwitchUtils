@@ -13,7 +13,7 @@ class Message:
                 continue
             self.messageData[final[0]] = final[1]
         if('user-type' in self.messageData):
-            self.messageData["message"] = self.messageData["user-type"][self.messageData["user-type"].find("#")+len(self.messageData["display-name"])+3:].replace('\r\n','')
+            self.messageData["message"] = self.messageData["user-type"][self.messageData["user-type"].find("PRIVMSG #")+len(self.messageData["display-name"]):].split(":")[1].replace('\r\n','')
 
     @property
     def owner(self):
@@ -32,6 +32,39 @@ class Message:
         return self.messageData["message"]
     def GetOwner(self):
         self.messageData["display-name"]
+    def GetSubscriberInfo(self):
+        """
+        Returns the amount of months the owner has been subscribed.
+        Returns -1 if not subscribed.
+        """
+        if("badge-info" in self.messageData):
+            badges = self.messageData['badge-info'].split(',')
+            for badge in badges:
+                info = badge.split("/")
+                if(info[0] == "subscriber"):
+                    return int(info[1])
+        return -1
+    def GetBadges(self):
+        finalOut = []
+        if("badge-info" in self.messageData):
+            badges = self.messageData['badge-info'].split(",")
+            for badge in badges:
+                finalOut.append(badge.split('/'))
+        return finalOut
+    def IsEmoteOnly(self):
+        if("emote-only" in self.messageData and self.messageData['emote-only'] == '1'):
+            return True
+        return False
+    def IsMod(self):
+        if("badges" in self.messageData):
+            if("moderator" in self.messageData['badges']):
+                return True
+        return False
+    def IsBroadcaster(self):
+        if("badges" in self.messageData):
+            if("broadcaster" in self.messageData['badges']):
+                return True
+        return False
 
 class Command:
     def __init__(self,trigger,onTriggerEvents,prefix=""):
@@ -39,7 +72,15 @@ class Command:
         self.trigger = trigger #So like 'ping'
         self.onTriggered = onTriggerEvents #A list (or 1) method that'll get called, being passed a 'CommandArgs' object.
         self.caseSensitive = False
+        self.modOnly = False
+        self.broadcasterOnly = False
     def CheckForCommand(self,message):
+        if(self.broadcasterOnly and message.IsBroadcaster() == False):
+            return
+        if(self.modOnly and message.IsMod() == False):
+            return
+
+
         splitUp = message.content.lower().split(" ")
         if(splitUp[0] == self.prefix+self.trigger):
             #Must be my command!
@@ -99,4 +140,3 @@ def Log(msg):
 
 if(__name__ == "__main__"):
     from bot import *
-

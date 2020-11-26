@@ -8,9 +8,12 @@ class TwitchBot:
         self.active = False
         self.username = username
         self.oauth = oauth
+        if("oauth:" not in self.oauth):
+            self.oauth = "oauth:" + oauth
         self.socket = socket.socket()
-        self.ircChannel = ("irc.chat.twitch.tv",6667)
+        self.ircServer = ("irc.chat.twitch.tv", 6667)
         self.messageSize = 1024
+        self.ignoreSelf = True
 
         self.onJoinEvents = [] #Functions, will get ran on join.
         self.commandRegistry = [] #List of the registered commands.
@@ -29,6 +32,8 @@ class TwitchBot:
         while self.active:
             recieved = self.RecieveMessage()
             formattedMessage = Message(recieved)
+            if("display-name" not in formattedMessage.messageData or (formattedMessage.owner == self.username and self.ignoreSelf)):
+                continue #If self, ignore.
             for command in self.commandRegistry:
                 command.CheckForCommand(formattedMessage)
             if(formattedMessage.messageData != {}):
@@ -39,7 +44,7 @@ class TwitchBot:
         waiting = True
         while(waiting):
             response = self.socket.recv(self.messageSize).decode()
-
+            #print(response)
             if (response == "PING :tmi.twitch.tv\r\n"):
                 self.SendMessage("PONG :tmi.twitch.tv\r\n")
                 Log("Successfully Pinged the server")
@@ -60,7 +65,7 @@ class TwitchBot:
     def SendMessage(self,msg):
         self.socket.send(msg.encode())
     def Connect(self,channelToJoin):
-        self.socket.connect(self.ircChannel)
+        self.socket.connect(self.ircServer)
         self.SendMessage("PASS "+self.oauth+"\r\n")
         self.SendMessage("NICK "+self.username+"\r\n")
         time.sleep(0.5)
@@ -80,3 +85,10 @@ class TwitchBot:
         self.Chat("/ban "+user+" "+reason)
     def Timeout(self,user,secs=600): #Not Tested
         self.Chat("/timeout "+user+" "+str(secs))
+
+
+
+
+
+
+
