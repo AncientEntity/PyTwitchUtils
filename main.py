@@ -132,7 +132,7 @@ class Channel:
         return self.GetViewerGroup('vips')
     def GetViewerCount(self):
         res = urlopen("https://tmi.twitch.tv/group/user/" + self.name + "/chatters")
-        content = res.read()
+        content = json.loads(res.read())
         return int(content['chatter_count'])
 
 def Log(msg):

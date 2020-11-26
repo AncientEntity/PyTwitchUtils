@@ -20,8 +20,12 @@ class TwitchBot:
 
         self.managerThread = None
         self.messageQueue = []
+        self.dontQueue = False
         self.channel = None
     def GetNext(self):
+        if(self.dontQueue):
+            print("Trying to GetNext() while dontQueue is equal to True. The queue will never get anything while it is True.")
+            return
         while(len(self.messageQueue) <= 0):
             pass #Hang until a message is ready
         next = self.messageQueue[0]
@@ -36,7 +40,8 @@ class TwitchBot:
                 continue #If self, ignore.
             for command in self.commandRegistry:
                 command.CheckForCommand(formattedMessage)
-            self.messageQueue.append(formattedMessage)
+            if(self.dontQueue == False):
+                self.messageQueue.append(formattedMessage)
     def RegisterCommand(self,command):
         self.commandRegistry.append(command)
     def RecieveMessage(self):
