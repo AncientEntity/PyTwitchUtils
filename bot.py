@@ -1,5 +1,6 @@
 import socket, time, threading
 from main import Message
+from main import Command
 from main import Log
 
 class TwitchBot:
@@ -10,6 +11,9 @@ class TwitchBot:
         self.socket = socket.socket()
         self.ircChannel = ("irc.chat.twitch.tv",6667)
         self.messageSize = 1024
+
+        self.onJoinEvents = [] #Functions, will get ran on join.
+        self.commandRegistry = [] #List of the registered commands.
 
         self.managerThread = None
         self.messageQueue = []
@@ -25,8 +29,12 @@ class TwitchBot:
         while self.active:
             recieved = self.RecieveMessage()
             formattedMessage = Message(recieved)
+            for command in self.commandRegistry:
+                command.CheckForCommand(formattedMessage)
             if(formattedMessage.messageData != {}):
                 self.messageQueue.append(formattedMessage)
+    def RegisterCommand(self,command):
+        self.commandRegistry.append(command)
     def RecieveMessage(self):
         waiting = True
         while(waiting):
@@ -38,11 +46,12 @@ class TwitchBot:
             elif ("End of /NAMES list" in response):
                 Log("Successfully Connected To " + self.channelIn)
                 time.sleep(1.2)
-                self.Chat("Twitch/Discord Relay Bot has arrived!")
                 Log("Welcome Message Successfully Send.")
                 time.sleep(0.5)
                 self.SendMessage("CAP REQ :twitch.tv/tags\r\n")
                 Log("Requesting User Data/Tags")
+                for event in self.onJoinEvents:
+                    event()
             else:
                 waiting = False
 
@@ -67,6 +76,3 @@ class TwitchBot:
     def Chat(self,msg):
         messageTemp = "PRIVMSG #" + self.channelIn + " :" + msg
         self.SendMessage(messageTemp + "\r\n")
-    def DoPing(self):
-        self.SendMessage("PONG :tmi.twitch.tv\r\n")
-
