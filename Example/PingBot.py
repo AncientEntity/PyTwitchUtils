@@ -6,7 +6,7 @@ bot = TwitchBot("TWITCH BOT USERNAME", "TWITCH BOT OAUTH")
 
 def OnJoinTest():
     print("Welcome Message Sent!")
-    #bot.Chat("Hello! I have arrived to moderate the universe!")
+    bot.Chat("Hello! I have arrived to moderate the universe!")
 
 def OnSubscribe(message):
     print(message.owner + " has subscribed!")
@@ -16,7 +16,7 @@ def OnUserJoin(username):
 
 def PingCommand(cArgs):
     print("Ponged.")
-    #bot.Chat("@" + cArgs.owner + " Pong!")
+    bot.Chat("@" + cArgs.owner + " Pong!")
 
 
 bot.RegisterCommand(Command("!ping", PingCommand))
