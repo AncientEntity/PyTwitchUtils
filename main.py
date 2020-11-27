@@ -1,26 +1,46 @@
 import json
 from urllib.request import urlopen
 import json
+import re
+
+MSG_OTHER = -1 #If the message is unidentified within PyTwitchUtils. Aka needs implementation.
+MSG_CHAT = 0 #If the message is from a user
+MSG_USERNOTICE = 1 #If the message is a twitch message, etc USERNOTICE
+MSG_JOIN = 2 #If the message is a user joining.
+MSG_USERSTATE = 3 #If the message is USERSTATE
 
 class Message:
-    def __init__(self,rawData):
+    def __init__(self,rawData,currentChannel):
         self.raw = rawData
+        #print(rawData)
         self.messageData = {}
+        self.messageType = MSG_CHAT
         rawData = rawData[1:].split(";")
         for seg in rawData:
             final = seg.split("=")
             if (len(final) == 1):
                 continue
             self.messageData[final[0]] = final[1]
-        if('user-type' in self.messageData):
-            self.messageData["message"] = self.messageData["user-type"][self.messageData["user-type"].find("PRIVMSG #")+len(self.messageData["display-name"]):].split(":")[1].replace('\r\n','')
-
+        if('user-type' in self.messageData and 'display-name' in self.messageData and self.messageData['user-type'].find("PRIVMSG") != -1):
+            self.messageData["message"] = self.messageData["user-type"][self.messageData["user-type"].find("PRIVMSG #")+len(currentChannel.name):].split(":")[1].replace('\r\n','')
+        elif('user-type' in self.messageData):
+            if("USERNOTICE" in self.messageData['user-type']):
+                self.messageType = MSG_USERNOTICE
+            elif("USERSTATE" in self.messageData['user-type']):
+                self.messageType = MSG_USERSTATE
+            else:
+                Log("Unimplemented Message Came Through PyTwitchUtils: "+self.raw)
+                self.messageType = MSG_OTHER
+        else:
+            if("JOIN" in self.raw):
+                self.messageType = MSG_JOIN
+                self.messageData['display-name'] = self.raw.split("!")[0][1:]
     @property
     def owner(self):
         return self.messageData["display-name"]
     @property
     def message(self):
-        return self.messageData['message']
+        return self.content()
     @property
     def content(self):
         try:
@@ -68,6 +88,16 @@ class Message:
     def IsVIP(self):
         if("badges" in self.messageData):
             if("vip" in self.messageData['badges']):
+                return True
+        return False
+    def IsReSub(self):
+        if(self.messageType == MSG_USERNOTICE and "msg-id" in self.messageData):
+            if(self.messageData['msg-id'] == 'resub'):
+                return True
+        return False
+    def IsSubscribe(self,includeResub=True):
+        if (self.messageType == MSG_USERNOTICE and "msg-id" in self.messageData):
+            if (self.messageData['msg-id'] == 'resub' or (self.messageData['msg-id'] == 'sub' and includeResub)):
                 return True
         return False
 

@@ -1,5 +1,5 @@
 import socket, time, threading
-from main import Message, Channel
+from main import Message, Channel, MSG_CHAT, MSG_JOIN
 from main import Command
 from main import Log
 
@@ -12,36 +12,53 @@ class TwitchBot:
             self.oauth = "oauth:" + oauth
         self.socket = socket.socket()
         self.ircServer = ("irc.chat.twitch.tv", 6667)
-        self.messageSize = 1024
+        self.messageSize = 4096
         self.ignoreSelf = True
 
-        self.onJoinEvents = [] #Functions, will get ran on join.
+        self.onStartEvents = [] #Functions, will get ran on join.
+        self.onSubscribeEvents = [] #When someone subscribers run these. PASSES THE USERNOTICE MESSAGE
+        self.onJoinChatEvents = [] #When someone joins the chat.
         self.commandRegistry = [] #List of the registered commands.
 
         self.managerThread = None
-        self.messageQueue = []
+        self.messageQueue = {-1 : [], 0 : [], 1 : [], 2 : [], 3 : [], 4 : []} #key is the type of the message, value is the message.
         self.dontQueue = False
         self.channel = None
-    def GetNext(self):
+    def GetNext(self): #Get's the next PRIVMSG in the queue
+        return self.GetNextOfType(MSG_CHAT)
+    def GetNextOfType(self,msgType):
         if(self.dontQueue):
-            print("Trying to GetNext() while dontQueue is equal to True. The queue will never get anything while it is True.")
+            print("Trying to GetNextOfType() while dontQueue is equal to True. The queue will never get anything while it is True.")
             return
-        while(len(self.messageQueue) <= 0):
+        while(len(self.messageQueue[msgType]) <= 0):
             pass #Hang until a message is ready
-        next = self.messageQueue[0]
-        self.messageQueue.pop(0)
+        next = self.messageQueue[msgType][0]
+        self.messageQueue[msgType].pop(0)
         return next
+    def GetNextAny(self):
+        for key in self.messageQueue.keys():
+            if(len(self.messageQueue[key]) > 0):
+                next = self.messageQueue[key][0]
+                self.messageQueue[key].pop(0)
+                return next
+        return None
     def BotManager(self):
         Log("Bot manager has begun.")
         while self.active:
             recieved = self.RecieveMessage()
-            formattedMessage = Message(recieved)
-            if(formattedMessage.messageData == {} or "display-name" not in formattedMessage.messageData or (formattedMessage.owner == self.username and self.ignoreSelf)):
+            formattedMessage = Message(recieved,self.channel)
+            if("display-name" in formattedMessage.messageData and formattedMessage.owner == self.username and self.ignoreSelf):
                 continue #If self, ignore.
             for command in self.commandRegistry:
                 command.CheckForCommand(formattedMessage)
+            if(formattedMessage.IsSubscribe()):
+                for event in self.onSubscribeEvents:
+                    event(formattedMessage)
+            if(formattedMessage.messageType == MSG_JOIN):
+                for event in self.onJoinChatEvents:
+                    event(formattedMessage.owner)
             if(self.dontQueue == False):
-                self.messageQueue.append(formattedMessage)
+                self.messageQueue[formattedMessage.messageType].append(formattedMessage)
     def RegisterCommand(self,command):
         self.commandRegistry.append(command)
     def RecieveMessage(self):
@@ -58,8 +75,9 @@ class TwitchBot:
                 Log("Welcome Message Successfully Send.")
                 time.sleep(0.5)
                 self.SendMessage("CAP REQ :twitch.tv/tags\r\n")
-                Log("Requesting User Data/Tags")
-                for event in self.onJoinEvents:
+                self.SendMessage("CAP REQ :twitch.tv/membership\r\n")
+                self.SendMessage("CAP REQ :twitch.tv/commands\r\n")
+                for event in self.onStartEvents:
                     event()
             else:
                 waiting = False

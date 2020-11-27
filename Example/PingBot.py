@@ -1,27 +1,33 @@
 from bot import TwitchBot
 from main import Command
 
-#Check line 6, and 22 to make it work. Good day sir and have fun!
-
-bot = TwitchBot("TWITCH USERNAME", "OAUTH HERE")
+bot = TwitchBot("TWITCH BOT USERNAME", "TWITCH BOT OAUTH")
 
 
 def OnJoinTest():
     print("Welcome Message Sent!")
-    bot.Chat("Hello! I have arrived to moderate the universe!")
+    #bot.Chat("Hello! I have arrived to moderate the universe!")
 
+def OnSubscribe(message):
+    print(message.owner + " has subscribed!")
+
+def OnUserJoin(username):
+    print(username + " has joined the chat.")
 
 def PingCommand(cArgs):
     print("Ponged.")
-    bot.Chat("@" + cArgs.owner + " Pong!")
+    #bot.Chat("@" + cArgs.owner + " Pong!")
 
 
 bot.RegisterCommand(Command("!ping", PingCommand))
 
-bot.onJoinEvents.append(OnJoinTest)
-bot.Connect("CHANNEL TO CONNECT TO")
+bot.onStartEvents.append(OnJoinTest)
+bot.onSubscribeEvents.append(OnSubscribe)
+bot.onJoinChatEvents.append(OnUserJoin)
+bot.Connect("CHANNEL TO JOIN")
 
 while True:
-    message = bot.GetNext()
-    #print(message.IsMod())
-    #print(message.IsBroadcaster())
+    message = bot.GetNextAny()
+    if(message == None):
+        continue
+    print(str(message.messageType) + " "+str(message.messageData))
