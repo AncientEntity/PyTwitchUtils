@@ -55,7 +55,7 @@ class Message:
     def GetMessage(self):
         return self.messageData["message"]
     def GetOwner(self):
-        self.messageData["display-name"]
+        return self.messageData["display-name"]
     def GetSubscriberInfo(self):
         """
         Returns the amount of months the owner has been subscribed.
@@ -104,6 +104,8 @@ class Message:
             if (self.messageData['msg-id'] == 'resub' or (self.messageData['msg-id'] == 'sub' and includeResub)):
                 return True
         return False
+    def IsWhisper(self):
+        return self.messageType == MSG_WHISPER
 
 class Command:
     def __init__(self,trigger,onTriggerEvents,prefix=""):
@@ -111,16 +113,27 @@ class Command:
         self.trigger = trigger #So like 'ping'
         self.onTriggered = onTriggerEvents #A list (or 1) method that'll get called, being passed a 'CommandArgs' object.
         self.caseSensitive = False
+        self.whisperOnly = False
         self.vipOnly = False
         self.modOnly = False
         self.broadcasterOnly = False
+        self.__allowedUsers = [] #DONT DIRECTLY ADD TO THIS.
     def CheckForCommand(self,message):
-        if(self.broadcasterOnly and message.IsBroadcaster() == False):
+        if(self.whisperOnly and message.messageType != MSG_WHISPER):
             return
-        if(self.modOnly and message.IsMod() == False):
+        elif(message.messageType != MSG_CHAT  and message.messageType != MSG_WHISPER):
             return
-        if(self.vipOnly and message.IsVip() == False):
+
+        if("display-name" not in message.messageData):
             return
+
+        if(message.GetOwner().lower() not in self.__allowedUsers):
+            if(self.broadcasterOnly and message.IsBroadcaster() == False):
+                return
+            if(self.modOnly and message.IsMod() == False):
+                return
+            if(self.vipOnly and message.IsVip() == False):
+                return
 
 
         splitUp = message.content.lower().split(" ")
@@ -132,6 +145,10 @@ class Command:
                     event(CommandArgs(message.owner,splitUp,message))
             else:
                 self.onTriggered(CommandArgs(message.owner,splitUp,message))
+    def AllowUser(self,userName):
+        self.__allowedUsers.append(userName.lower())
+    def DisallowUser(self,userName):
+        self.__allowedUsers.remove(userName.lower())
 
 class CommandArgs:
     def __init__(self, owner, args, message):
