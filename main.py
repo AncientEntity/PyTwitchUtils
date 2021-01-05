@@ -8,6 +8,7 @@ MSG_CHAT = 0 #If the message is from a user
 MSG_USERNOTICE = 1 #If the message is a twitch message, etc USERNOTICE
 MSG_JOIN = 2 #If the message is a user joining.
 MSG_USERSTATE = 3 #If the message is USERSTATE
+MSG_WHISPER = 4 #A whisper recieved.
 
 class Message:
     def __init__(self,rawData,currentChannel):
@@ -28,6 +29,9 @@ class Message:
                 self.messageType = MSG_USERNOTICE
             elif("USERSTATE" in self.messageData['user-type']):
                 self.messageType = MSG_USERSTATE
+            elif("WHISPER" in self.messageData['user-type']):
+                self.messageType = MSG_WHISPER
+                self.messageData["message"] = self.messageData["user-type"][self.messageData["user-type"].find("WHISPER #") + len(currentChannel.name):].split(":")[1].replace('\r\n', '')
             else:
                 Log("Unimplemented Message Came Through PyTwitchUtils: "+self.raw)
                 self.messageType = MSG_OTHER

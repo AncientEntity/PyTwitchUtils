@@ -21,7 +21,7 @@ class TwitchBot:
         self.commandRegistry = [] #List of the registered commands.
 
         self.managerThread = None
-        self.messageQueue = {-1 : [], 0 : [], 1 : [], 2 : [], 3 : [], 4 : []} #key is the type of the message, value is the message.
+        self.messageQueue = {-1 : [], 0 : [], 1 : [], 2 : [], 3 : [], 4 : [], 5 : []} #key is the type of the message, value is the message.
         self.dontQueue = False
         self.channel = None
     def GetNext(self): #Get's the next PRIVMSG in the queue
