@@ -103,6 +103,9 @@ class TwitchBot:
     def Chat(self,msg):
         messageTemp = "PRIVMSG #" + self.channel.name + " :" + msg
         self.SendMessage(messageTemp + "\r\n")
+    def Whisper(self,user, msg):
+        messageTemp = "PRIVMSG #" + self.channel.name + " :/w "+user.lower()+" " + msg
+        self.SendMessage(messageTemp + "\r\n")
     def Ban(self,user,reason=""): #Not Tested
         self.Chat("/ban "+user+" "+reason)
     def Timeout(self,user,secs=600): #Not Tested

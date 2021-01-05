@@ -127,16 +127,38 @@ class Command:
         if("display-name" not in message.messageData):
             return
 
-        if(message.GetOwner().lower() not in self.__allowedUsers):
-            if(self.broadcasterOnly and message.IsBroadcaster() == False):
-                return
-            if(self.modOnly and message.IsMod() == False):
-                return
-            if(self.vipOnly and message.IsVip() == False):
-                return
+        if (message.GetOwner().lower() not in self.__allowedUsers and len(self.__allowedUsers) > 0):
+            return
+
+        if(self.broadcasterOnly and message.IsBroadcaster() == False):
+            return
+        if(self.modOnly and message.IsMod() == False):
+            return
+        if(self.vipOnly and message.IsVip() == False):
+            return
 
 
         splitUp = message.content.lower().split(" ")
+        splitUpFancy = []
+        waitingForClosing = False
+        startIndex = 0
+        curIndex = 0
+        for fragment in splitUp: #This allows multiworld parameters
+            if(fragment[0] == '"' and waitingForClosing == False):
+                waitingForClosing = True
+                startIndex = curIndex
+            elif(waitingForClosing == False):
+                splitUpFancy.append(fragment)
+            elif(waitingForClosing == True and fragment[len(fragment)-1] == '"'):
+                connected = ""
+                for piece in splitUp[startIndex:curIndex+1]:
+                    connected = connected + piece + " "
+                splitUpFancy.append(connected[1:len(connected)-2]) #Removes the quotes.
+                startIndex = 0
+                waitingForClosing = False
+            curIndex+=1
+        splitUp = splitUpFancy
+
         if(splitUp[0] == self.prefix+self.trigger):
             #Must be my command!
             splitUp.pop(0)
@@ -152,7 +174,7 @@ class Command:
 
 class CommandArgs:
     def __init__(self, owner, args, message):
-        self.owner = owner
+        self.owner = owner.lower()
         self.args = args
         self.message = message
 
