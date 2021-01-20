@@ -144,19 +144,24 @@ class Command:
         startIndex = 0
         curIndex = 0
         for fragment in splitUp: #This allows multiworld parameters
-            if(fragment[0] == '"' and waitingForClosing == False):
-                waitingForClosing = True
-                startIndex = curIndex
-            elif(waitingForClosing == False):
-                splitUpFancy.append(fragment)
-            elif(waitingForClosing == True and fragment[len(fragment)-1] == '"'):
-                connected = ""
-                for piece in splitUp[startIndex:curIndex+1]:
-                    connected = connected + piece + " "
-                splitUpFancy.append(connected[1:len(connected)-2]) #Removes the quotes.
-                startIndex = 0
-                waitingForClosing = False
-            curIndex+=1
+            try:
+                if(fragment == ""):
+                    continue
+                if(fragment[0] == '"' and waitingForClosing == False):
+                    waitingForClosing = True
+                    startIndex = curIndex
+                elif(waitingForClosing == False):
+                    splitUpFancy.append(fragment)
+                elif(waitingForClosing == True and fragment[len(fragment)-1] == '"'):
+                    connected = ""
+                    for piece in splitUp[startIndex:curIndex+1]:
+                        connected = connected + piece + " "
+                    splitUpFancy.append(connected[1:len(connected)-2]) #Removes the quotes.
+                    startIndex = 0
+                    waitingForClosing = False
+                curIndex+=1
+            except Exception as e:
+                print(e)
         splitUp = splitUpFancy
 
         if(splitUp[0] == self.prefix+self.trigger):
