@@ -132,9 +132,9 @@ class Command:
 
         if(self.broadcasterOnly and message.IsBroadcaster() == False):
             return
-        if(self.modOnly and message.IsMod() == False):
+        if(self.modOnly and message.IsMod() == False and message.IsBroadcaster() == False):
             return
-        if(self.vipOnly and message.IsVip() == False):
+        if(self.vipOnly and message.IsVip() == False and message.IsBroadcaster() == False and message.IsMod() == False):
             return
 
 
