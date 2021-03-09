@@ -134,7 +134,7 @@ class Command:
             return
         if(self.modOnly and message.IsMod() == False and message.IsBroadcaster() == False):
             return
-        if(self.vipOnly and message.IsVip() == False and message.IsBroadcaster() == False and message.IsMod() == False):
+        if(self.vipOnly and message.IsVIP() == False and message.IsBroadcaster() == False and message.IsMod() == False):
             return
 
 
