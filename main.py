@@ -164,7 +164,7 @@ class Command:
                 print(e)
         splitUp = splitUpFancy
 
-        if(splitUp[0] == self.prefix+self.trigger):
+        if(len(splitUp) > 0 and splitUp[0] == self.prefix+self.trigger):
             #Must be my command!
             splitUp.pop(0)
             if(isinstance(self.onTriggered,list)):
