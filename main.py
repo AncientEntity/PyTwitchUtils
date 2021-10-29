@@ -41,10 +41,12 @@ class Message:
                 self.messageData['display-name'] = self.raw.split("!")[0][1:]
     @property
     def owner(self):
+        if("display-name" not in self.messageData):
+            return None
         return self.messageData["display-name"]
     @property
     def message(self):
-        return self.content()
+        return self.messageData['message']
     @property
     def content(self):
         try:
@@ -55,6 +57,8 @@ class Message:
     def GetMessage(self):
         return self.messageData["message"]
     def GetOwner(self):
+        if("display-name" not in self.messageData):
+            return None
         return self.messageData["display-name"]
     def GetSubscriberInfo(self):
         """
@@ -94,6 +98,11 @@ class Message:
             if("vip" in self.messageData['badges']):
                 return True
         return False
+    def IsSubscriber(self):
+        if("badges" in self.messageData):
+            if("subscriber" in self.messageData['badges']):
+                return True
+        return False
     def IsReSub(self):
         if(self.messageType == MSG_USERNOTICE and "msg-id" in self.messageData):
             if(self.messageData['msg-id'] == 'resub'):
@@ -106,6 +115,10 @@ class Message:
         return False
     def IsWhisper(self):
         return self.messageType == MSG_WHISPER
+    def GetReward(self):
+        if("custom-reward-id" in self.messageData):
+            return self.messageData["custom-reward-id"]
+        return "NULL"
 
 class Command:
     def __init__(self,trigger,onTriggerEvents,prefix=""):
@@ -163,8 +176,9 @@ class Command:
             except Exception as e:
                 print(e)
         splitUp = splitUpFancy
-
-        if(len(splitUp) > 0 and splitUp[0] == self.prefix+self.trigger):
+        if(len(splitUpFancy) <= 0):
+            splitUp.append("")
+        if(splitUp[0] == self.prefix+self.trigger):
             #Must be my command!
             splitUp.pop(0)
             if(isinstance(self.onTriggered,list)):
