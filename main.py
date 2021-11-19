@@ -227,6 +227,8 @@ class Channel:
         content = json.loads(res.read())
         return int(content['chatter_count'])
 
+
+
 def Log(msg):
     print("[PyTwitchUtils] "+msg)
 

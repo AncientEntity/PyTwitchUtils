@@ -24,6 +24,7 @@ class TwitchBot:
         self.messageQueue = {-1 : [], 0 : [], 1 : [], 2 : [], 3 : [], 4 : [], 5 : []} #key is the type of the message, value is the message.
         self.dontQueue = False
         self.channel = None
+
     def GetNext(self): #Get's the next PRIVMSG in the queue
         return self.GetNextOfType(MSG_CHAT)
     def GetNextOfType(self,msgType):
@@ -35,7 +36,7 @@ class TwitchBot:
         next = self.messageQueue[msgType][0]
         self.messageQueue[msgType].pop(0)
         return next
-    def GetNextAny(self):
+    def GetNextAny(self) -> Message:
         for key in self.messageQueue.keys():
             if(len(self.messageQueue[key]) > 0):
                 next = self.messageQueue[key][0]
@@ -110,10 +111,4 @@ class TwitchBot:
         self.Chat("/ban "+user+" "+reason)
     def Timeout(self,user,secs=600): #Not Tested
         self.Chat("/timeout "+user+" "+str(secs))
-
-
-
-
-
-
 
