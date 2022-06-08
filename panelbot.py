@@ -44,12 +44,16 @@ class PanelBot:
 			panel.GetButtonByIndex(self.toggleChatButtonIndex)["text"] = "Disable Log Chat"
 			panel.ConsoleWrite("Chat Enabled", 'blue')
 	def ConnectToTwitch(self):
+		panel.ReadConfigFile()
+
 		if (self.twitchBot.active == True):
 			self.twitchBot.Close()
 			panel.ConsoleWrite("Bot disconnected from Twitch.", 'blue')
 			panel.GetButtonByIndex(self.connectTwitchButtonIndex)["text"] = "Connect to Twitch"
 			return
-		panel.ReadConfigFile()
+		if(panel.configSettings["username"] == "" or panel.configSettings["oauth"] == "" or panel.configSettings["targetChannel"] == ""):
+			panel.ConsoleWrite("Incorrect Bot Credentials... Check Config",'red')
+			return
 		try:
 			self.twitchBot.username = panel.configSettings["username"]
 			self.twitchBot.oauth = panel.configSettings["oauth"]
@@ -58,7 +62,7 @@ class PanelBot:
 		except Exception as e:
 			panel.ConsoleWrite(str(e), 'red')
 			panel.ConsoleWrite(
-				"Try restarting the bot, that usually works. Otherwise an antivirus/firewall is preventing the connection to Twitch.",
+				"Try restarting the bot, that usually works. Otherwise you have incorrect credentials in the config or an antivirus/firewall is blocking the connection.",
 				'red')
 		panel.ConsoleWrite("Attempting Twitch Connection...", 'blue')
 

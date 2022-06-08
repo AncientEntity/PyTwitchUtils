@@ -100,7 +100,7 @@ def ReadConfigFile():
 		WriteConfigFile()
 
 def WriteConfigFile():
-	global configSettingsInputs,configSettings
+	global configSettingsInputs,configSettings, configRoot
 	i = 0
 	for settingName in configSettings.keys():
 		configSettings[settingName] = configSettingsInputs[i].get("1.0","end").strip()
@@ -110,13 +110,16 @@ def WriteConfigFile():
 	f = open("config.dat", "w+")
 	f.write(json.dumps(configSettings))
 	f.close()
+	configRoot.destroy()
+	configRoot = None
 
 def CreateConfig():
 	global configRoot, configSettingsInputs
 	ReadConfigFile()
 	configRoot = Tk()
 	configRoot.title("Config")
-	configRoot.geometry("450x400")
+	configRoot.geometry("450x120")
+	configRoot.resizable(False,False)
 	i = 0
 	configSettingsInputs = []
 	for config in configSettings.items():
@@ -128,7 +131,7 @@ def CreateConfig():
 		input.grid(row=i,column=1)
 		configSettingsInputs.append(input)
 		i += 1
-	configSaveButton = Button(configRoot,text="Save",command=WriteConfigFile)
+	configSaveButton = Button(configRoot,text="Save & Close",command=WriteConfigFile)
 	configSaveButton.grid(row=i,column=0,pady=20)
 
 
@@ -136,7 +139,8 @@ def CreatePanel():
 	global root, consoleLog, consoleInput, settingsFrame
 	root = Tk()
 	root.title("Control Panel")
-	root.geometry("875x390")
+	root.geometry("815x390")
+	root.resizable(False,False)
 	consoleLog = Text(root,width = 80,height = 20)
 	consoleLog.config(state='disabled')
 	consoleLog.grid(row=0,padx=10,pady=10)
