@@ -1,7 +1,6 @@
 import json
 from urllib.request import urlopen
-import json
-import re
+import panel
 
 MSG_OTHER = -1 #If the message is unidentified within PyTwitchUtils. Aka needs implementation.
 MSG_CHAT = 0 #If the message is from a user
@@ -231,6 +230,8 @@ class Channel:
 
 def Log(msg):
     print("[PyTwitchUtils] "+msg)
+    panel.ConsoleWrite("[PyTwitchUtils] "+msg,'black')
+
 
 
 if(__name__ == "__main__"):

@@ -47,6 +47,7 @@ class TwitchBot:
         Log("Bot manager has begun.")
         while self.active:
             recieved = self.RecieveMessage()
+            if(recieved == ""): continue;
             formattedMessage = Message(recieved,self.channel)
             if("display-name" in formattedMessage.messageData and formattedMessage.owner == self.username and self.ignoreSelf):
                 continue #If self, ignore.
@@ -65,7 +66,10 @@ class TwitchBot:
     def RecieveMessage(self):
         waiting = True
         while(waiting):
-            response = self.socket.recv(self.messageSize).decode()
+            try:
+                response = self.socket.recv(self.messageSize).decode()
+            except:
+                return "" #Socket was closed mid recv
             #print(response)
             if (response == "PING :tmi.twitch.tv\r\n"):
                 self.SendMessage("PONG :tmi.twitch.tv\r\n")
@@ -101,6 +105,7 @@ class TwitchBot:
         self.active = False
         time.sleep(0.25) #Wait for managerThread to stop to prevent any possible issues
         self.socket.close()
+        self.socket = socket.socket()
     def Chat(self,msg):
         messageTemp = "PRIVMSG #" + self.channel.name + " :" + msg
         self.SendMessage(messageTemp + "\r\n")
