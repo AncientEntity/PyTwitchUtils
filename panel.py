@@ -8,6 +8,8 @@ BOLD_TIMESTAMP = False
 root = None
 consoleLog = None
 consoleInput = None
+settingsFrame = None
+settingsButtons = []
 queuedCommands = []
 
 def TestMessageCommand():
@@ -55,8 +57,19 @@ def ConsoleInputEvent(*args):
 	consoleInput.delete('1.0','end')
 	queuedCommands.append(commandString.split(" "))
 
+def GetButtonByIndex(i):
+	return settingsButtons[i]
+
+def CreateNewSettingsButton(text,func):
+	"""Returns the index of the button created."""
+	global settingsButtons, settingsFrame
+	newButton = Button(settingsFrame,text=text,command=func)
+	newButton.grid(row=len(settingsButtons)+1,column=0)
+	settingsButtons.append(newButton)
+	return len(settingsButtons) - 1 #Return index of button
+
 def CreatePanel():
-	global root, consoleLog, consoleInput
+	global root, consoleLog, consoleInput, settingsFrame
 	root = Tk()
 	root.title("Control Panel")
 	root.geometry("875x390")
@@ -69,12 +82,16 @@ def CreatePanel():
 	consoleInput.bind("<Return>",ConsoleInputEvent)
 	consoleInput.grid(row=1)
 
-	settingsLabel = Label(root,text="Settings",font=("Arial",25))
-	settingsLabel.grid(row=0,column=1,sticky="NE")
+	settingsFrame = Frame()
+	settingsFrame.grid(row=0,column=1)
+
+	settingsLabel = Label(settingsFrame,text="Settings",font=("Arial",25))
+	settingsLabel.grid(row=0,column=0,sticky="NE")
 	settingsLabel.grid_anchor("n")
 
-	consoleTestSettingButton = Button(root,text="Test Message",command=TestMessageCommand)
-	consoleTestSettingButton.grid(row=0,column=1)
+	CreateNewSettingsButton("Test Message",TestMessageCommand)
+
+	ConsoleWrite(GenerateTimeStamp()+"Panel Setup Complete",'black')
 
 def Tick():
 	global root
