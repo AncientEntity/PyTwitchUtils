@@ -17,6 +17,11 @@ def TestMessageCommand():
 
 def GetNextCommand():
 	if(len(queuedCommands) == 0): return None;
+	c = queuedCommands[0].split(" ")
+	queuedCommands.pop(0)
+	return c
+def GetNextCommandRaw():
+	if(len(queuedCommands) == 0): return None;
 	c = queuedCommands[0]
 	queuedCommands.pop(0)
 	return c
@@ -51,13 +56,13 @@ def ConsoleInputEvent(*args):
 	timeStamp = GenerateTimeStamp()
 	newText = timeStamp + commandString
 	if(BOLD_TIMESTAMP):
-		ConsoleWrite(newText,color='red',boldPrefixChars=len(timeStamp))
+		ConsoleWrite(newText,color='grey',boldPrefixChars=len(timeStamp))
 	else:
-		ConsoleWrite(newText, color='red', boldPrefixChars=0)
+		ConsoleWrite(newText, color='grey', boldPrefixChars=0)
 	consoleInput.delete('1.0','end')
-	queuedCommands.append(commandString.split(" "))
+	queuedCommands.append(commandString)
 
-def GetButtonByIndex(i):
+def GetButtonByIndex(i) -> Button:
 	return settingsButtons[i]
 
 def CreateNewSettingsButton(text,func):
