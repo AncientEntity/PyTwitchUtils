@@ -101,7 +101,8 @@ def ConsoleInputEvent(*args):
 	queuedCommands.append(commandString)
 
 def SetConfigSetting(settingName,curValue):
-	configSettings[settingName] = curValue
+	if(settingName not in configSettings):
+		configSettings[settingName] = curValue
 def GetConfigSetting(settingName):
 	return configSettings[settingName]
 

@@ -54,7 +54,10 @@ class Message:
             return ""
 
     def GetMessage(self):
-        return self.messageData["message"]
+        if("message" in self.messageData):
+            return self.messageData["message"]
+        else:
+            return ""
     def GetOwner(self):
         if("display-name" not in self.messageData):
             return None

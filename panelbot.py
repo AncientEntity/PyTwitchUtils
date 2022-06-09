@@ -7,6 +7,7 @@ class PanelBot:
 	def __init__(self):
 		self.twitchBot = TwitchBot("","")
 		self.chatFeedActive = True
+		self.commandPrefix = "!"
 		panel.SetConfigSetting("username", "")
 		panel.SetConfigSetting("oauth", "")
 		panel.SetConfigSetting("targetChannel", "")
@@ -21,8 +22,10 @@ class PanelBot:
 
 		panelMessage = panel.GetNextCommandRaw()
 		if (panelMessage != None and self.twitchBot.active):
-			if(panelMessage[0] != "!"):
+			if(panelMessage[0] != self.commandPrefix):
 				self.twitchBot.Chat(panelMessage)
+			#else:
+			#	self.twitchBot.HandleMessage(Message(panelMessage,self.twitchBot.channel))
 
 		if self.twitchBot.active:
 			message = self.twitchBot.GetNextAny()
@@ -34,6 +37,9 @@ class PanelBot:
 					owner = message.owner
 					if (owner != None):
 						panel.ConsoleWrite(panel.GenerateTimeStamp() + "<" + owner + "> " + message.message,
+										   color='blue')
+					elif("msg-id" in message.messageData):
+						panel.ConsoleWrite(panel.GenerateTimeStamp() + message.messageData["msg-id"],
 										   color='blue')
 	def ChatToggle(self):
 		if (self.chatFeedActive):
