@@ -1,12 +1,12 @@
-from bot import TwitchBot
-from main import Command
+import panelbot
+from main import *
+from bot import *
 
-bot = TwitchBot("TWITCH BOT USERNAME", "TWITCH BOT OAUTH")
-
+bot = panelbot.PanelBot()
 
 def OnJoinTest():
     print("Welcome Message Sent!")
-    bot.Chat("Hello! I have arrived to moderate the universe!")
+    #bot.twitchBot.Chat("Hello! I have arrived to moderate the universe!")
 
 def OnSubscribe(message):
     print(message.owner + " has subscribed!")
@@ -16,18 +16,14 @@ def OnUserJoin(username):
 
 def PingCommand(cArgs):
     print("Ponged.")
-    bot.Chat("@" + cArgs.owner + " Pong!")
+    #bot.Chat("@" + cArgs.owner + " Pong!")
 
+bot.twitchBot.RegisterCommand(Command("!ping", PingCommand))
 
-bot.RegisterCommand(Command("!ping", PingCommand))
+bot.twitchBot.onStartEvents.append(OnJoinTest)
+bot.twitchBot.onSubscribeEvents.append(OnSubscribe)
+bot.twitchBot.onJoinChatEvents.append(OnUserJoin)
 
-bot.onStartEvents.append(OnJoinTest)
-bot.onSubscribeEvents.append(OnSubscribe)
-bot.onJoinChatEvents.append(OnUserJoin)
-bot.Connect("CHANNEL TO JOIN")
 
 while True:
-    message = bot.GetNextAny()
-    if(message == None):
-        continue
-    print(str(message.messageType) + " "+str(message.messageData))
+    bot.Tick()

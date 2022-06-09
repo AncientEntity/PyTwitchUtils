@@ -47,25 +47,31 @@ class TwitchBot:
         Log("Bot manager has begun.")
         while self.active:
             recieved = self.RecieveMessage()
+            if(recieved == ""): continue;
             formattedMessage = Message(recieved,self.channel)
-            if("display-name" in formattedMessage.messageData and formattedMessage.owner == self.username and self.ignoreSelf):
-                continue #If self, ignore.
-            for command in self.commandRegistry:
-                command.CheckForCommand(formattedMessage)
-            if(formattedMessage.IsSubscribe()):
-                for event in self.onSubscribeEvents:
-                    event(formattedMessage)
-            if(formattedMessage.messageType == MSG_JOIN):
-                for event in self.onJoinChatEvents:
-                    event(formattedMessage.owner)
-            if(self.dontQueue == False):
-                self.messageQueue[formattedMessage.messageType].append(formattedMessage)
+            self.HandleMessage(formattedMessage)
+    def HandleMessage(self,formattedMessage):
+        if ("display-name" in formattedMessage.messageData and formattedMessage.owner == self.username and self.ignoreSelf):
+            return
+        for command in self.commandRegistry:
+            command.CheckForCommand(formattedMessage)
+        if (formattedMessage.IsSubscribe()):
+            for event in self.onSubscribeEvents:
+                event(formattedMessage)
+        if (formattedMessage.messageType == MSG_JOIN):
+            for event in self.onJoinChatEvents:
+                event(formattedMessage.owner)
+        if (self.dontQueue == False):
+            self.messageQueue[formattedMessage.messageType].append(formattedMessage)
     def RegisterCommand(self,command):
         self.commandRegistry.append(command)
     def RecieveMessage(self):
         waiting = True
         while(waiting):
-            response = self.socket.recv(self.messageSize).decode()
+            try:
+                response = self.socket.recv(self.messageSize).decode()
+            except:
+                return "" #Socket was closed mid recv
             #print(response)
             if (response == "PING :tmi.twitch.tv\r\n"):
                 self.SendMessage("PONG :tmi.twitch.tv\r\n")
@@ -101,9 +107,11 @@ class TwitchBot:
         self.active = False
         time.sleep(0.25) #Wait for managerThread to stop to prevent any possible issues
         self.socket.close()
+        self.socket = socket.socket()
     def Chat(self,msg):
         messageTemp = "PRIVMSG #" + self.channel.name + " :" + msg
         self.SendMessage(messageTemp + "\r\n")
+        PyTwitchUtils.panel.ConsoleWrite(PyTwitchUtils.panel.GenerateTimeStamp()+"<"+self.username+"> "+msg,'SkyBlue2')
     def Whisper(self,user, msg):
         messageTemp = "PRIVMSG #" + self.channel.name + " :/w "+user.lower()+" " + msg
         self.SendMessage(messageTemp + "\r\n")
