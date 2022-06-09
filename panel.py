@@ -18,6 +18,29 @@ settingsButtons = []
 queuedCommands = []
 consoleLogQueue = []
 
+_logToFile = False
+_currentFileName = ""
+_currentFile = None
+_chatLogButtonIndex = -1
+
+def ToggleFileLog():
+	global _logToFile, _currentFile, _currentFileName
+	if(_logToFile == False):
+		_logToFile = True
+		_currentFileName = "ConsoleLog"+GenerateTimeStamp(True)+".txt"
+		if(os.path.exists("logs\\") == False):
+			os.mkdir("logs\\")
+		_currentFile = open("logs\\"+_currentFileName,"a+")
+		ConsoleWrite("Chat log started. Logging to "+_currentFileName,'blue')
+		GetButtonByIndex(_chatLogButtonIndex)["text"] = "End Chat Log"
+	else:
+		_logToFile = False
+		_currentFile.close()
+		ConsoleWrite("Chat log saved as "+_currentFileName,'blue')
+		_currentFileName = ""
+		GetButtonByIndex(_chatLogButtonIndex)["text"] = "Begin Chat Log"
+
+
 def TestMessageCommand():
 	ConsoleWrite("Test Message",'blue')
 
@@ -32,8 +55,11 @@ def GetNextCommandRaw():
 	queuedCommands.pop(0)
 	return c
 
-def GenerateTimeStamp():
-	return "["+datetime.datetime.now().strftime("%d-%m-%Y %H:%M:%S")+"] "
+def GenerateTimeStamp(clean=False):
+	if(clean == False):
+		return "["+datetime.datetime.now().strftime("%d-%m-%Y %H:%M:%S")+"] "
+	else:
+		return datetime.datetime.now().strftime("%d-%m-%Y-%H-%M-%S")
 
 def ConsoleWrite(text,color='black',boldPrefixChars=0):
 	consoleLogQueue.append([text,color,boldPrefixChars])
@@ -42,6 +68,8 @@ def _ConsoleWrite(text,color='black',boldPrefixChars=0):
 	consoleLog.config(state='normal')
 	firstIndex = float(consoleLog.index("end"))
 	consoleLog.insert('end', text+'\n')
+	if(_logToFile):
+		_currentFile.write(text+"\n")
 	lastIndex = float(consoleLog.index("end"))
 	#print(firstIndex," ",lastIndex)
 	randomSuffix = str(random.randint(-99999999,9999999))
@@ -85,7 +113,7 @@ def CreateNewSettingsButton(text,func):
 	"""Returns the index of the button created."""
 	global settingsButtons, settingsFrame
 	newButton = Button(settingsFrame,text=text,command=func)
-	newButton.grid(row=len(settingsButtons)+1,column=0)
+	newButton.grid(row=len(settingsButtons)+1,column=0,pady=5)
 	settingsButtons.append(newButton)
 	return len(settingsButtons) - 1 #Return index of button
 
@@ -112,6 +140,7 @@ def WriteConfigFile():
 	f.close()
 	configRoot.destroy()
 	configRoot = None
+	ConsoleWrite(GenerateTimeStamp()+"Config Saved/Closed")
 
 def CreateConfig():
 	global configRoot, configSettingsInputs
@@ -133,14 +162,16 @@ def CreateConfig():
 		i += 1
 	configSaveButton = Button(configRoot,text="Save & Close",command=WriteConfigFile)
 	configSaveButton.grid(row=i,column=0,pady=20)
+	ConsoleWrite(GenerateTimeStamp()+"Config Opened")
 
 
 def CreatePanel():
-	global root, consoleLog, consoleInput, settingsFrame
+	global root, consoleLog, consoleInput, settingsFrame, _chatLogButtonIndex
 	root = Tk()
 	root.title("Control Panel")
-	root.geometry("815x390")
+	root.geometry("800x390")
 	root.resizable(False,False)
+
 	consoleLog = Text(root,width = 80,height = 20)
 	consoleLog.config(state='disabled')
 	consoleLog.grid(row=0,padx=10,pady=10)
@@ -154,13 +185,15 @@ def CreatePanel():
 	settingsFrame.grid(row=0,column=1)
 
 	settingsLabel = Label(settingsFrame,text="Settings",font=("Arial",25))
-	settingsLabel.grid(row=0,column=0,sticky="NE")
+	settingsLabel.grid(row=0,column=0,sticky="N")
 	settingsLabel.grid_anchor("n")
 
 	#CreateNewSettingsButton("Test Message",TestMessageCommand)
 	CreateNewSettingsButton("Open Config",CreateConfig)
+	_chatLogButtonIndex = CreateNewSettingsButton("Begin Chat Log", ToggleFileLog)
 
 	ConsoleWrite(GenerateTimeStamp()+"Panel Setup Complete",'black')
+
 
 def Tick():
 	global root, configRoot

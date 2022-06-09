@@ -6,7 +6,7 @@ bot = panelbot.PanelBot()
 
 def OnJoinTest():
     print("Welcome Message Sent!")
-    bot.twitchBot.Chat("Hello! I have arrived to moderate the universe!")
+    #bot.twitchBot.Chat("Hello! I have arrived to moderate the universe!")
 
 def OnSubscribe(message):
     print(message.owner + " has subscribed!")

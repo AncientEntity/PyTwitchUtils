@@ -11,7 +11,7 @@ class PanelBot:
 		panel.SetConfigSetting("oauth", "")
 		panel.SetConfigSetting("targetChannel", "")
 		panel.CreatePanel()
-		self.toggleChatButtonIndex = panel.CreateNewSettingsButton("Disable Log Chat", self.ChatToggle)
+		self.toggleChatButtonIndex = panel.CreateNewSettingsButton("Disable Chat Feed", self.ChatToggle)
 		self.connectTwitchButtonIndex = panel.CreateNewSettingsButton("Connect to Twitch", self.ConnectToTwitch)
 
 		self.messageQueue = {-1: [], 0: [], 1: [], 2: [], 3: [], 4: [],
@@ -21,7 +21,8 @@ class PanelBot:
 
 		panelMessage = panel.GetNextCommandRaw()
 		if (panelMessage != None and self.twitchBot.active):
-			self.twitchBot.Chat(panelMessage)
+			if(panelMessage[0] != "!"):
+				self.twitchBot.Chat(panelMessage)
 
 		if self.twitchBot.active:
 			message = self.twitchBot.GetNextAny()
@@ -37,11 +38,11 @@ class PanelBot:
 	def ChatToggle(self):
 		if (self.chatFeedActive):
 			self.chatFeedActive = False
-			panel.GetButtonByIndex(self.toggleChatButtonIndex)["text"] = "Enable Log Chat"
+			panel.GetButtonByIndex(self.toggleChatButtonIndex)["text"] = "Enable Chat Feed"
 			panel.ConsoleWrite("Chat Disabled", 'blue')
 		else:
 			self.chatFeedActive = True
-			panel.GetButtonByIndex(self.toggleChatButtonIndex)["text"] = "Disable Log Chat"
+			panel.GetButtonByIndex(self.toggleChatButtonIndex)["text"] = "Disable Chat Feed"
 			panel.ConsoleWrite("Chat Enabled", 'blue')
 	def ConnectToTwitch(self):
 		panel.ReadConfigFile()
@@ -51,7 +52,7 @@ class PanelBot:
 			panel.ConsoleWrite("Bot disconnected from Twitch.", 'blue')
 			panel.GetButtonByIndex(self.connectTwitchButtonIndex)["text"] = "Connect to Twitch"
 			return
-		if(panel.configSettings["username"] == "" or panel.configSettings["oauth"] == "" or panel.configSettings["targetChannel"] == ""):
+		if(panel.configSettings["username"] == "" or panel.configSettings["oauth"] == "" or panel.configSettings["targetChannel"] == "" or "oauth:" not in panel.configSettings["oauth"]):
 			panel.ConsoleWrite("Incorrect Bot Credentials... Check Config",'red')
 			return
 		try:
@@ -65,7 +66,6 @@ class PanelBot:
 				"Try restarting the bot, that usually works. Otherwise you have incorrect credentials in the config or an antivirus/firewall is blocking the connection.",
 				'red')
 		panel.ConsoleWrite("Attempting Twitch Connection...", 'blue')
-
 	def GetNext(self):  # Get's the next PRIVMSG in the queue
 		return self.GetNextOfType(MSG_CHAT)
 
