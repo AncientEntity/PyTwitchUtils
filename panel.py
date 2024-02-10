@@ -148,7 +148,7 @@ def CreateConfig():
 	ReadConfigFile()
 	configRoot = Tk()
 	configRoot.title("Config")
-	configRoot.geometry("450x120")
+	configRoot.geometry("450x"+str(100+20*len(configSettings.items())))
 	configRoot.resizable(False,False)
 	i = 0
 	configSettingsInputs = []
