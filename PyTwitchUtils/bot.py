@@ -1,9 +1,9 @@
 import socket, time, threading, os, importlib
 
 import PyTwitchUtils.panel
-from .main import Message, Channel, MSG_CHAT, MSG_JOIN, CommandArgs
-from .main import Command
-from .main import Log
+from .datatypes import Message, Channel, MSG_CHAT, MSG_JOIN, CommandArgs
+from .datatypes import Command
+from .datatypes import Log
 from .channelconnection import *
 
 class TwitchBot:

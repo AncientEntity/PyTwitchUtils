@@ -1,5 +1,5 @@
 import time, requests
-from PyTwitchUtils.main import Log
+from PyTwitchUtils.datatypes import Log
 
 
 class TwitchApplication:

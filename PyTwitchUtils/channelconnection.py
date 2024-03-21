@@ -1,6 +1,6 @@
 import socket
 
-from PyTwitchUtils.main import Channel
+from PyTwitchUtils.datatypes import Channel
 
 
 class ChannelConnection:

@@ -2,3 +2,4 @@ PrivateExamples/*
 venv/*
 .idea/*
 __pycache__/*
+config.dat

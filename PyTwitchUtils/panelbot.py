@@ -1,5 +1,5 @@
 from PyTwitchUtils.bot import TwitchBot
-from PyTwitchUtils.main import *
+from PyTwitchUtils.datatypes import *
 import PyTwitchUtils.panel as panel
 
 class PanelBot:
