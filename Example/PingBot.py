@@ -1,6 +1,5 @@
-import panelbot
-from main import *
-from bot import *
+from PyTwitchUtils import panelbot
+from PyTwitchUtils.bot import *
 
 bot = panelbot.PanelBot()
 
