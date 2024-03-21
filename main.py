@@ -1,6 +1,9 @@
 import json
 from urllib.request import urlopen
-import panel
+import json
+import re
+
+from PyTwitchUtils import panel
 
 MSG_OTHER = -1 #If the message is unidentified within PyTwitchUtils. Aka needs implementation.
 MSG_CHAT = 0 #If the message is from a user
@@ -15,6 +18,7 @@ class Message:
         #print(rawData)
         self.messageData = {}
         self.messageType = MSG_CHAT
+        self.channelOrigin : Channel = currentChannel #The origin channel it came from if the bot is connected to multiple channels this is useful!
         rawData = rawData[1:].split(";")
         for seg in rawData:
             final = seg.split("=")
@@ -45,7 +49,10 @@ class Message:
         return self.messageData["display-name"]
     @property
     def message(self):
-        return self.messageData['message']
+        if("message" in self.messageData):
+            return self.messageData['message']
+        else:
+            return None
     @property
     def content(self):
         try:
@@ -132,8 +139,13 @@ class Command:
         self.vipOnly = False
         self.modOnly = False
         self.broadcasterOnly = False
+        self.channelLimited = "" #If empty, not channel limited, if has a channel it will only work on that channel.
+        self.deleteOnBotClose = False
         self.__allowedUsers = [] #DONT DIRECTLY ADD TO THIS.
     def CheckForCommand(self,message):
+        if(self.channelLimited != "" and self.channelLimited != message.channelOrigin.name):
+            return
+
         if(self.whisperOnly and message.messageType != MSG_WHISPER):
             return
         elif(message.messageType != MSG_CHAT  and message.messageType != MSG_WHISPER):
@@ -202,6 +214,8 @@ class CommandArgs:
 class Channel:
     def __init__(self,name):
         self.name = name # Channel's name
+    def __str__(self):
+        return self.name
     def GetCurrentViewers(self):
         res = urlopen("https://tmi.twitch.tv/group/user/" + self.name + "/chatters")
         content = res.read()
@@ -229,13 +243,10 @@ class Channel:
         content = json.loads(res.read())
         return int(content['chatter_count'])
 
-
-
 def Log(msg):
     print("[PyTwitchUtils] "+msg)
     panel.ConsoleWrite("[PyTwitchUtils] "+msg,'black')
 
 
-
 if(__name__ == "__main__"):
-    from bot import *
+    from .bot import *
