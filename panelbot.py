@@ -1,6 +1,6 @@
-from bot import TwitchBot
-from main import *
-import panel
+from PyTwitchUtils.bot import TwitchBot
+from PyTwitchUtils.main import *
+import PyTwitchUtils.panel as panel
 
 class PanelBot:
 	"""A Twitch bot with a panel GUI."""
@@ -24,8 +24,8 @@ class PanelBot:
 		if (panelMessage != None and self.twitchBot.active):
 			if(panelMessage[0] != self.commandPrefix):
 				self.twitchBot.Chat(panelMessage)
-			#else:
-			#	self.twitchBot.HandleMessage(Message(panelMessage,self.twitchBot.channel))
+			else:
+				self.twitchBot.HandleMessage(Message(panelMessage,self.twitchBot.channel))
 
 		if self.twitchBot.active:
 			message = self.twitchBot.GetNextAny()
@@ -36,7 +36,7 @@ class PanelBot:
 				if self.chatFeedActive and message.messageType == MSG_CHAT:
 					owner = message.owner
 					if (owner != None):
-						panel.ConsoleWrite(panel.GenerateTimeStamp() + "<" + owner + "> " + message.message,
+						panel.ConsoleWrite(panel.GenerateTimeStamp() +"<c:"+message.channelOrigin.name+"> "+ "<" + owner + "> " + message.message,
 										   color='blue')
 					elif("msg-id" in message.messageData):
 						panel.ConsoleWrite(panel.GenerateTimeStamp() + message.messageData["msg-id"],
